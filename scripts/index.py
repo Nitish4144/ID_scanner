@@ -2,61 +2,80 @@ import os
 import re
 import cv2
 import pytesseract
+import shutil
 
-# Path containing images
-IMAGE_FOLDER = r"photos"
+INPUT_FOLDER = "photos"
+OUTPUT_FOLDER = "renamed_photos"
 
-# Tesseract path (Windows only)
-# Uncomment and modify if needed:
-# pytesseract.pytesseract.tesseract_cmd = r"C:\Program Files\Tesseract-OCR\tesseract.exe"
+os.makedirs(OUTPUT_FOLDER, exist_ok=True)
 
-for filename in os.listdir(IMAGE_FOLDER):
-    if filename.lower().endswith((".jpg", ".jpeg", ".png")):
+pytesseract.pytesseract.tesseract_cmd = \
+r"C:\Program Files\Tesseract-OCR\tesseract.exe"
 
-        image_path = os.path.join(IMAGE_FOLDER, filename)
+for filename in os.listdir(INPUT_FOLDER):
 
-        # Read image
-        img = cv2.imread(image_path)
+    if not filename.lower().endswith(
+        (".jpg", ".jpeg", ".png")
+    ):
+        continue
 
-        if img is None:
-            continue
+    path = os.path.join(INPUT_FOLDER, filename)
 
-        h, w = img.shape[:2]
+    img = cv2.imread(path)
 
-        # Crop bottom 25% of image
-        bottom_part = img[int(h * 0.75):h, :]
+    if img is None:
+        continue
 
-        # Convert to grayscale
-        gray = cv2.cvtColor(bottom_part, cv2.COLOR_BGR2GRAY)
+    h, w = img.shape[:2]
 
-        # Threshold for better OCR
-        gray = cv2.threshold(
-            gray, 0, 255, cv2.THRESH_BINARY + cv2.THRESH_OTSU
-        )[1]
+    # Bottom 25%
+    crop = img[int(h * 0.75):h, :]
 
-        # OCR
-        text = pytesseract.image_to_string(gray)
+    gray = cv2.cvtColor(
+        crop,
+        cv2.COLOR_BGR2GRAY
+    )
 
-        print(f"{filename} -> OCR: {text}")
+    gray = cv2.threshold(
+        gray,
+        0,
+        255,
+        cv2.THRESH_BINARY + cv2.THRESH_OTSU
+    )[1]
 
-        # Extract ID (adjust regex to your format)
-        match = re.search(r'\b\d{4,}\b', text)
+    text = pytesseract.image_to_string(gray)
 
-        if match:
-            person_id = match.group()
+    # Extract long numeric ID
+    match = re.search(r"\d{4,}", text)
 
-            ext = os.path.splitext(filename)[1]
-            new_name = f"{person_id}{ext}"
-            new_path = os.path.join(IMAGE_FOLDER, new_name)
+    if not match:
+        print(f"ID not found: {filename}")
+        continue
 
-            # Avoid overwriting existing files
-            counter = 1
-            while os.path.exists(new_path):
-                new_name = f"{person_id}_{counter}{ext}"
-                new_path = os.path.join(IMAGE_FOLDER, new_name)
-                counter += 1
+    person_id = match.group()
 
-            os.rename(image_path, new_path)
-            print(f"Renamed: {filename} -> {new_name}")
-        else:
-            print(f"No ID found in {filename}")
+    ext = os.path.splitext(filename)[1]
+
+    new_name = f"{person_id}{ext}"
+
+    dst = os.path.join(
+        OUTPUT_FOLDER,
+        new_name
+    )
+
+    counter = 1
+
+    while os.path.exists(dst):
+        dst = os.path.join(
+            OUTPUT_FOLDER,
+            f"{person_id}_{counter}{ext}"
+        )
+        counter += 1
+
+    shutil.copy2(path, dst)
+
+    print(
+        f"{filename} -> {os.path.basename(dst)}"
+    )
+
+print("\nRenaming completed.")
