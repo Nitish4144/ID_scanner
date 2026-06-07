@@ -28,8 +28,8 @@ for filename in os.listdir(INPUT_FOLDER):
 
     h, w = img.shape[:2]
 
-    # Bottom 25%
-    crop = img[int(h * 0.75):h, :]
+    # Bottom 20%
+    crop = img[int(h * 0.80):h, :]
 
     gray = cv2.cvtColor(
         crop,

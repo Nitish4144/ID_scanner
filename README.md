@@ -35,12 +35,6 @@ python -m venv venv
 venv\Scripts\activate
 ```
 
-### Linux / Mac
-
-```bash
-python3 -m venv venv
-source venv/bin/activate
-```
 
 ---
 
@@ -110,7 +104,7 @@ The person's ID should be visible near the bottom of each image.
 Run:
 
 ```bash
-python 01_rename_from_photo.py
+python index.py
 ```
 
 The script:
@@ -147,7 +141,7 @@ After:
 Run:
 
 ```bash
-python 02_generate_aruco.py
+python marker_generator.py
 ```
 
 The script:
@@ -208,7 +202,7 @@ Each marker uniquely identifies a person.
 Run:
 
 ```bash
-python 03_scan_aruco.py
+python scanenr.py
 ```
 
 The script:
@@ -265,73 +259,3 @@ Scan Marker
       ▼
 Retrieve Person ID
 ```
-
----
-
-# Troubleshooting
-
-## OCR Not Detecting IDs
-
-Try:
-
-- Increasing image quality
-- Using higher contrast images
-- Increasing crop area
-
-Current crop:
-
-```python
-crop = img[int(h * 0.75):h, :]
-```
-
-Change if IDs are not located in the bottom 25%.
-
----
-
-## Webcam Not Opening
-
-Try changing:
-
-```python
-cap = cv2.VideoCapture(0)
-```
-
-to:
-
-```python
-cap = cv2.VideoCapture(1)
-```
-
-if multiple cameras are connected.
-
----
-
-## Marker Not Detected
-
-Ensure:
-
-- Marker is fully visible
-- Marker is not blurry
-- Adequate lighting exists
-- Marker is printed at a reasonable size
-
----
-
-# Future Improvements
-
-Possible enhancements:
-
-- Attendance system
-- Excel attendance export
-- Student database integration
-- Name and department lookup
-- Face verification
-- QR code support
-- Web dashboard
-- Real-time attendance tracking
-
----
-
-# License
-
-This project is provided for educational and research purposes.
